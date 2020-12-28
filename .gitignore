@@ -1,3 +1,6 @@
+config.ts
+out/
+
 # Logs
 logs
 *.log
