@@ -1,5 +1,5 @@
 import { Router } from "express";
-import User from "../../models/User";
+import User, { IUser } from "../../models/User";
 import * as commontags from 'common-tags'
 
 const router = Router()
@@ -13,12 +13,15 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
     const { id } = req.params
-    User.findById(id, function (err, userModel) {
-        if (err) return res.status(400).send({ err })
-        return res.send(userModel)
-    })
+
+    try {
+        const user = await User.findById(id)
+        return res.send(user)
+    } catch (err) {
+        return res.status(400).send({ error: err })
+    }
 })
 
 router.post('/', (req, res) => {
