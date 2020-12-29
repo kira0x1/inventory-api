@@ -7,7 +7,8 @@ export interface IUser extends Document {
 
 const userSchema = new Schema({
     username: { type: String, required: true, index: { unique: true } },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    characters: [{ type: Schema.Types.ObjectId, ref: 'Characters' }]
 })
 
 export default model<IUser>('Users', userSchema)
