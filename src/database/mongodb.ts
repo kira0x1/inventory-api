@@ -5,14 +5,16 @@ import { dbURI } from '../config';
 const mongooseOptions: ConnectionOptions = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true
+    useCreateIndex: true,
+    autoIndex: false
 };
 
 export async function connectToDB() {
-    connect(dbURI, mongooseOptions)
+    (await connect(dbURI, mongooseOptions)).set('debug', true)
 }
 
 export const db = connection
+
 
 db.on('error', console.error.bind(console, 'Connection error:'))
 db.once('open', () => {
