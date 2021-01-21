@@ -15,12 +15,34 @@ router.get('/', auth, (req, res) => {
     });
 });
 
+router.get('/:id(\d+)', auth, async (req, res) => {
+    const { id } = req.params
+    try {
+        const user = await User.findById(id)
+        return res.send(user)
+    } catch (err) {
+        return res.status(400).send({ err })
+    }
+})
+
+router.get('/:username', async (req, res) => {
+    console.log('meow')
+    const { username } = req.body
+    if (!username) return res.status(400).send({ error: 'Required fields not found: username' })
+    try {
+        const user = await User.findOne({ username: username })
+        return res.send(user)
+    } catch (err) {
+        return res.status(400).send({ err })
+    }
+})
+
 router.post('/token', (req, res) => {
     const { username, password } = req.body
     const fieldsNotFound = checkForFields(username, password)
 
     if (fieldsNotFound)
-        res.status(400).send({
+        return res.status(400).send({
             err: commontags.commaListsAnd`
 Required fields not found: ${fieldsNotFound}`
         });
@@ -28,7 +50,6 @@ Required fields not found: ${fieldsNotFound}`
     User.findOne({ username: username }, async (err: string, user: IUser) => {
         if (err) return res.status(400).send(err)
         if (!user) return res.status(400).send({ error: `Cannot find user "${username}"` })
-
         const passCheck = await user.comparePassword(password)
 
         if (!passCheck)
@@ -36,30 +57,20 @@ Required fields not found: ${fieldsNotFound}`
 
         const payload = { id: user._id }
         const token = sign(payload, secret)
+        console.log(payload)
         return res.send(token)
     })
-})
-
-router.get('/:id', auth, async (req, res) => {
-    const { id } = req.params
-
-    try {
-        const user = await User.findById(id)
-        return res.send(user)
-    } catch (err) {
-        return res.status(400).send({ error: err })
-    }
 })
 
 router.post('/', (req, res) => {
     const { username, password } = req.body;
 
     const fieldsNotFound = checkForFields(username, password)
-    if (fieldsNotFound)
-        res.status(400).send({
-            err: commontags.commaListsAnd`
+
+    if (fieldsNotFound) res.status(400).send({
+        err: commontags.commaListsAnd`
     Required fields not found: ${fieldsNotFound}`
-        });
+    });
 
     const newUser = new User({
         username: username,
@@ -76,8 +87,11 @@ router.post('/', (req, res) => {
 });
 
 router.get('/current', auth, (req, res) => {
-    return res.send(req.user)
-})
+    return res.send(req.user);
+});
+
+
+export default router;
 
 function checkForFields(username: string, password: string) {
     if (!username || !password) {
@@ -88,8 +102,6 @@ function checkForFields(username: string, password: string) {
 
         return fieldsNotFound
     }
+
     return undefined
 }
-
-export default router;
-
